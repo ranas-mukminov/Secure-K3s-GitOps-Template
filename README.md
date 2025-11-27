@@ -38,10 +38,9 @@ Vendor-grade, secure-by-default K3s reference built by **Ranas Mukminov** (run-a
 ```mermaid
 flowchart LR
     User([User]) -->|HTTPS| CF[Cloudflare]
-    CF -->|tunnel agent| Tunnel[Cloudflare Tunnel]
+    CF -->|tunnel agent| Tunnel[Cloudflare Tunnel\n(no exposed ports)]
     Tunnel -->|private link| K3s[K3s Control Plane]
     K3s -.->|GitOps sync| ArgoCD[ArgoCD]
-    note right of Tunnel: No port 22 / kube-api exposed
 ```
 
 ## Operations
