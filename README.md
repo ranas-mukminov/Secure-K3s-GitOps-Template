@@ -43,6 +43,18 @@ flowchart LR
     K3s -.->|GitOps sync| ArgoCD[ArgoCD]
 ```
 
+
+## Optional: host harden before K3s join
+
+The base template path does **not** require AutoHarden. For SMB / Starter nodes you may optionally harden the host **before** `k3s` join:
+
+1. Dry-run: [AutoHarden-Toolkit](https://github.com/ranas-mukminov/AutoHarden-Toolkit) `./bin/autoharden run --profile smb-default`
+2. Review the Markdown report / [director checklist](https://github.com/ranas-mukminov/AutoHarden-Toolkit/blob/main/docs/director-checklist.md)
+3. Apply: `sudo ./bin/autoharden run --profile smb-default --apply`
+4. Then continue with `./bootstrap.sh` / `make deploy` as usual
+
+Full steps: [k3s-pre-join-bootstrap.md](https://github.com/ranas-mukminov/AutoHarden-Toolkit/blob/main/docs/k3s-pre-join-bootstrap.md) · narrow SSH helper: [ssh-harden](https://github.com/ranas-mukminov/ssh-harden)
+
 ## Operations
 - **Bootstrap:** `./bootstrap.sh` to confirm dependencies and set up local environment.
 - **Provision:** `make deploy` provisions Hetzner/DO compute and applies manifests through ArgoCD.
