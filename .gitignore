@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+*.pem
+*.key
+kubeconfig*
+.gate-report/
+kube-simple-audit-report.md
+__pycache__/
+.DS_Store

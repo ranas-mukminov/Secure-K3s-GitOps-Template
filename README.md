@@ -1,48 +1,48 @@
 # Secure-K3s-GitOps-Template
 
-![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![K3s](https://img.shields.io/badge/K3s-v1.30+-blue.svg) ![Security Scan](https://img.shields.io/badge/Security%20Scan-github--actions-brightgreen)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![K3s](https://img.shields.io/badge/K3s-v1.30+-blue.svg)
+![Template](https://img.shields.io/badge/GitHub-Use%20this%20template-blue)
 
-Vendor-grade, secure-by-default K3s reference built by **Ranas Mukminov** (run-as-daemon.dev). Click **Use this template** to bootstrap a Zero Trust cluster with no exposed ports, Cloudflare Tunnel ingress, and GitOps-first operations with ArgoCD.
+> **TEMPLATE REPOSITORY** — click **Use this template** to start. Day-to-prod path below; commercial Starter Pack deliverables in [`docs/starter-pack-deliverables.md`](docs/starter-pack-deliverables.md).
 
-## Why this exists
-- Zero Trust: no direct SSH, no public kube-api; ingress is brokered by Cloudflare Tunnel.
-- GitOps-first: every change is declarative and reconciled by ArgoCD.
-- Opinionated security: CIS-inspired hardening via Ansible and locked-down Terraform defaults.
+Vendor-grade, secure-by-default K3s reference by **Ranas Security** ([run-as-daemon.dev](https://run-as-daemon.dev)). Bootstrap a Zero Trust cluster: no exposed ports, Cloudflare Tunnel ingress, GitOps with ArgoCD.
 
-## Repository layout
-```
-.
-├─ .github/workflows/        # CI/security checks
-├─ cluster/                  # ArgoCD app-of-apps + Kubernetes manifests
-├─ infrastructure/
-│  ├─ ansible/               # K3s host hardening playbooks
-│  └─ terraform/             # IaC for Hetzner/DO
-├─ scripts/                  # Helper utilities
-├─ bootstrap.sh              # One-time bootstrap entrypoint
-└─ Makefile                  # Common tasks
-```
+## Day-to-prod
 
-## How to use this template
-1. Click **Use this template** → create your repo (private recommended).
-2. Generate Cloudflare Tunnel credentials (no open ports) and store them as secrets (e.g., `CLOUDFLARE_TUNNEL_TOKEN`).
-3. Add your Terraform/Ansible secrets to your chosen secret manager (GitHub Actions, 1Password, SOPS + age, etc.).
-4. Clone your new repo locally and install prerequisites: `kubectl`, `terraform`, `ansible`, `helm`.
-5. Review and adapt `infrastructure/terraform/main.tf` variables (location, server type, SSH key refs).
-6. Run `./bootstrap.sh` to validate dependencies and prepare the environment.
-7. Run `make install` to initialize tooling (Terraform init, provider plugins, pre-commit hooks).
-8. Run `make deploy` to provision infrastructure and sync ArgoCD bootstrap manifests.
-9. Verify Cloudflare Tunnel connects and that ArgoCD is reconciling apps (no inbound ports exposed).
-10. Commit and push. ArgoCD will continuously enforce the desired state from Git.
+| Step | Action |
+|------|--------|
+| 1. Prerequisites | `kubectl`, `terraform` ≥ 1.6, `ansible` (recommended), `helm`, Cloudflare + Hetzner (or adapt Terraform) |
+| 2. Template | **Use this template** → private repo recommended |
+| 3. Secrets | `cp .env.example .env` and fill tokens (`.env` is gitignored) |
+| 4. Bootstrap | `./bootstrap.sh` — validates deps, `terraform init` |
+| 5. Install | `make install` |
+| 6. Deploy | `make deploy` → push Git → ArgoCD reconciles `cluster/` |
+| 7. Verify | Tunnel up; no public kube-api/SSH; apps healthy |
+| 8. Gate + audit | See [Security tooling](#security-tooling-gate--audit) |
 
-## Architecture (Zero Trust ingress)
-```mermaid
-flowchart LR
-    User([User]) -->|HTTPS| CF[Cloudflare]
-    CF -->|tunnel agent| Tunnel["Cloudflare Tunnel (no exposed ports)"]
-    Tunnel -->|private link| K3s[K3s Control Plane]
-    K3s -.->|GitOps sync| ArgoCD[ArgoCD]
+Longer notes: [`docs/day-to-prod.md`](docs/day-to-prod.md).
+
+```bash
+cp .env.example .env   # edit secrets
+./bootstrap.sh
+make install
+make deploy
 ```
 
+## Security tooling (gate + audit)
+
+| Tool | Role | Link |
+|------|------|------|
+| **k8s-security-gate** | CI: fail on CRITICAL/HIGH manifest findings | [repo](https://github.com/ranas-mukminov/k8s-security-gate) · copy [`examples/ci/k8s-security-gate.yml`](examples/ci/k8s-security-gate.yml) → `.github/workflows/` when you add cluster YAML |
+| **Kube-Simple-Audit** | Runtime one-liner + Markdown report | [repo](https://github.com/ranas-mukminov/Kube-Simple-Audit) |
+
+```bash
+# Runtime sanity check (needs kubectl + jq)
+curl -fsSL https://raw.githubusercontent.com/ranas-mukminov/Kube-Simple-Audit/main/audit.sh | bash -s -- --markdown
+```
+
+> Workflow files are shipped under `examples/ci/` so empty template trees do not break Actions, and so PRs do not require the GitHub `workflow` OAuth scope. Copy into `.github/workflows/` when ready.
 
 ## Optional: host harden before K3s join
 
@@ -55,17 +55,48 @@ The base template path does **not** require AutoHarden. For SMB / Starter nodes 
 
 Full steps: [k3s-pre-join-bootstrap.md](https://github.com/ranas-mukminov/AutoHarden-Toolkit/blob/main/docs/k3s-pre-join-bootstrap.md) · narrow SSH helper: [ssh-harden](https://github.com/ranas-mukminov/ssh-harden)
 
-## Operations
-- **Bootstrap:** `./bootstrap.sh` to confirm dependencies and set up local environment.
-- **Provision:** `make deploy` provisions Hetzner/DO compute and applies manifests through ArgoCD.
-- **Security posture:** Terraform firewalls default to deny-all ingress; ArgoCD and API are only reachable through the tunnel.
-- **Hardening:** Ansible playbooks align with CIS guidance; adjust roles in `infrastructure/ansible` per workload needs.
+## Why this exists
+
+- **Zero Trust:** no direct SSH, no public kube-api; ingress via Cloudflare Tunnel.
+- **GitOps-first:** declarative state reconciled by ArgoCD.
+- **Opinionated security:** CIS-inspired Ansible hardening + locked-down Terraform defaults.
+
+## Repository layout
+
+```
+.
+├─ examples/ci/              # Copy-paste workflows (security gate)
+├─ docs/                     # Day-to-prod + commercial deliverables one-pager
+├─ cluster/                  # ArgoCD app-of-apps + Kubernetes manifests
+├─ infrastructure/
+│  ├─ ansible/               # K3s host hardening playbooks
+│  └─ terraform/             # IaC for Hetzner/DO
+├─ scripts/                  # Helper utilities
+├─ .env.example              # Documented secrets (no real values)
+├─ bootstrap.sh              # One-time bootstrap entrypoint
+└─ Makefile                  # Common tasks
+```
+
+## Architecture (Zero Trust ingress)
+
+```mermaid
+flowchart LR
+    User([User]) -->|HTTPS| CF[Cloudflare]
+    CF -->|tunnel agent| Tunnel["Cloudflare Tunnel (no exposed ports)"]
+    Tunnel -->|private link| K3s[K3s Control Plane]
+    K3s -.->|GitOps sync| ArgoCD[ArgoCD]
+```
+
+## Commercial Starter Pack
+
+OSS template is free (MIT). For guided onboarding, SLA hypercare, and a written remediation pack, see **[`docs/starter-pack-deliverables.md`](docs/starter-pack-deliverables.md)** (A5 one-pager).
+
+- CTA: [Express Audit + Hardening](https://run-as-daemon.dev/en/services/express-audit-hardening.html) · [Telegram](https://t.me/run_as_daemon_dev) · [Book a call](https://calendly.com/aleksandrranas/new-meeting)
 
 ## Contributing
-Issues and PRs welcome. Follow the Zero Trust assumptions—no new public ingress, no unmanaged mutations to cluster state.
+
+Issues and PRs welcome. Keep Zero Trust assumptions — no new public ingress, no unmanaged cluster mutations.
 
 ## License
-MIT License. See `LICENSE` for details.
 
-## Enterprise support
-Need white-glove onboarding or custom security reviews? [Book a call](https://calendly.com/aleksandrranas/new-meeting).
+MIT. See `LICENSE`.

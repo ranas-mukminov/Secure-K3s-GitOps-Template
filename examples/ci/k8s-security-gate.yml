@@ -1,0 +1,87 @@
+# Copy into Secure-K3s-GitOps-Template as:
+#   .github/workflows/k8s-security-gate.yml
+#
+# Scoped to cluster manifests so empty/.gitkeep trees do not fail CI.
+# Fails the job on CRITICAL or HIGH Checkov findings.
+#
+# Source: https://github.com/ranas-mukminov/k8s-security-gate (examples/)
+
+name: K8s Security Gate
+
+on:
+  pull_request:
+    paths:
+      - "cluster/**/*.yaml"
+      - "cluster/**/*.yml"
+      - "infrastructure/**/*.yaml"
+      - "infrastructure/**/*.yml"
+  push:
+    branches: [main]
+    paths:
+      - "cluster/**/*.yaml"
+      - "cluster/**/*.yml"
+      - "infrastructure/**/*.yaml"
+      - "infrastructure/**/*.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-gate:
+    name: Fail on CRITICAL/HIGH
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect manifest paths
+        id: paths
+        run: |
+          set -euo pipefail
+          targets=()
+          for d in cluster infrastructure; do
+            if find "$d" -type f \( -name '*.yaml' -o -name '*.yml' \) 2>/dev/null | grep -q .; then
+              targets+=("$d")
+            fi
+          done
+          if [ ${#targets[@]} -eq 0 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No Kubernetes YAML under cluster/ or infrastructure/ — skipping gate."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "dirs=${targets[*]}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Checkov (fail on CRITICAL/HIGH)
+        if: steps.paths.outputs.skip != 'true'
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ steps.paths.outputs.dirs }}
+          framework: kubernetes
+          output_format: cli,sarif
+          output_file_path: console,checkov.sarif
+          soft_fail: false
+          soft_fail_on: MEDIUM,LOW
+          download_external_modules: true
+
+      - name: Upload SARIF artifact
+        if: always() && steps.paths.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-sarif
+          path: checkov.sarif
+          if-no-files-found: ignore
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## K8s Security Gate"
+            echo ""
+            echo "- Scope: \`cluster/\` + \`infrastructure/\` Kubernetes manifests"
+            echo "- Policy: **fail on CRITICAL and HIGH** (MEDIUM/LOW soft-fail)"
+            echo "- Template: [Secure-K3s-GitOps-Template](https://github.com/ranas-mukminov/Secure-K3s-GitOps-Template)"
+            echo "- Gate docs: [k8s-security-gate](https://github.com/ranas-mukminov/k8s-security-gate)"
+          } >> "$GITHUB_STEP_SUMMARY"
