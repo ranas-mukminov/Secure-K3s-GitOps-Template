@@ -38,10 +38,9 @@
 
 ## CTA
 
-- Site: https://run-as-daemon.dev/en/services/express-audit-hardening.html
-- Telegram: https://t.me/run_as_daemon_dev
-- Calendly: https://calendly.com/aleksandrranas/new-meeting
-- Email: via site contact
+- **Primary:** [Telegram @en_run_as_daemon_dev](https://t.me/en_run_as_daemon_dev) — 15-min architecture review
+- HQ: https://run-as-daemon.pro
+- Gateway: https://run-as-daemon.dev
 
 ---
 
