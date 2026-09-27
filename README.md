@@ -91,7 +91,7 @@ flowchart LR
 
 OSS template is free (MIT). For guided onboarding, SLA hypercare, and a written remediation pack, see **[`docs/starter-pack-deliverables.md`](docs/starter-pack-deliverables.md)** (A5 one-pager).
 
-- CTA: [Telegram @en_run_as_daemon_dev](https://t.me/en_run_as_daemon_dev) · [Book a call](https://calendly.com/aleksandrranas/new-meeting) · [run-as-daemon.dev](https://run-as-daemon.dev)
+- CTA: [Telegram @en_run_as_daemon_dev](https://t.me/en_run_as_daemon_dev) · [HQ run-as-daemon.pro](https://run-as-daemon.pro) · [Gateway](https://run-as-daemon.dev)
 
 ## Contributing
 
