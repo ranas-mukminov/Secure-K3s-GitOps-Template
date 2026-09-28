@@ -47,6 +47,14 @@ for dir in infrastructure/terraform infrastructure/ansible cluster scripts; do
 done
 ok "Directory layout validated"
 
+# Honest starter: empty cluster/ looks “ready” but ArgoCD has nothing to sync.
+if ! find "$ROOT_DIR/cluster" -type f ! -name '.gitkeep' 2>/dev/null | grep -q .; then
+  warn "cluster/ has no manifests yet — copy from examples/ (or add Application/kustomization) before make deploy"
+fi
+if ! find "$ROOT_DIR/scripts" -type f ! -name '.gitkeep' 2>/dev/null | grep -q .; then
+  warn "scripts/ is empty — expected helper scripts are not present yet"
+fi
+
 TF_MAIN="$ROOT_DIR/infrastructure/terraform/main.tf"
 if [[ ! -f "$TF_MAIN" ]]; then
   warn "Terraform main.tf missing — treat infrastructure/ as stub until you add providers"
@@ -62,7 +70,7 @@ fi
 
 info "🧭 Next steps"
 echo "  • Fill .env / secret manager (Hetzner, SSH key, Cloudflare tunnel)."
-echo "  • make install && make deploy — then commit so ArgoCD reconciles."
+echo "  • Add cluster manifests (Application / kustomization) then make install && make deploy."
 echo "  • Copy examples/ci/k8s-security-gate.yml → .github/workflows/ when cluster YAML exists."
 echo "  • Runtime check: curl -fsSL https://raw.githubusercontent.com/ranas-mukminov/Kube-Simple-Audit/main/audit.sh | bash"
 echo "  • Commercial pack: docs/starter-pack-deliverables.md"
