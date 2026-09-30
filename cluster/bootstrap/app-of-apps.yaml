@@ -1,0 +1,26 @@
+# EXAMPLE ArgoCD Application — syncs this repo's cluster/ tree.
+# After "Use this template": set spec.source.repoURL to YOUR GitHub repo URL.
+# Install ArgoCD first (make install / helm), then: kubectl apply -k cluster/bootstrap
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app-of-apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    # TODO: replace with your fork/template repo URL
+    repoURL: https://github.com/YOUR_ORG/YOUR_REPO.git
+    targetRevision: HEAD
+    path: cluster/bootstrap
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
