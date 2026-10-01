@@ -70,7 +70,7 @@ fi
 
 info "🧭 Next steps"
 echo "  • Fill .env / secret manager (Hetzner, SSH key, Cloudflare tunnel)."
-echo "  • Add cluster manifests (Application / kustomization) then make install && make deploy."
+echo "  • Review cluster/bootstrap/ (replace YOUR_ORG/YOUR_REPO), then make install && make deploy."
 echo "  • Copy examples/ci/k8s-security-gate.yml → .github/workflows/ when cluster YAML exists."
 echo "  • Runtime check: curl -fsSL https://raw.githubusercontent.com/ranas-mukminov/Kube-Simple-Audit/main/audit.sh | bash"
 echo "  • Commercial pack: docs/starter-pack-deliverables.md"
