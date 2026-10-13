@@ -95,19 +95,35 @@ resource "hcloud_server" "k3s_control" {
 
   ssh_keys     = [hcloud_ssh_key.admin.id]
   firewall_ids = [hcloud_firewall.k3s.id]
-  networks = [
-    hcloud_network.k3s.id,
-  ]
+
+  # Provider expects a nested network block (not a list attribute). alias_ips = []
+  # avoids the TF 1.4+ detach/reattach loop (hetznercloud/terraform-provider-hcloud#650).
+  network {
+    network_id = hcloud_network.k3s.id
+    alias_ips  = []
+  }
+
+  # Subnet must exist before attach; otherwise create races fail randomly.
+  depends_on = [hcloud_subnet.k3s_nodes]
 
   # Cloud-init here should only perform minimal setup; full hardening is applied via Ansible.
+  # PasswordAuthentication: write a drop-in. The old sed only matched the commented
+  # "#PasswordAuthentication yes" line in sshd_config and missed Ubuntu cloud-init
+  # drop-ins under sshd_config.d/ (often still PasswordAuthentication yes).
   user_data = <<-EOT
     #cloud-config
     package_update: true
     package_upgrade: true
+    write_files:
+      - path: /etc/ssh/sshd_config.d/99-disable-password.conf
+        owner: root:root
+        permissions: "0644"
+        content: |
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
     runcmd:
       - ufw disable
-      - sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-      - systemctl restart ssh
+      - systemctl reload ssh || systemctl reload sshd || systemctl restart ssh
   EOT
 }
 
