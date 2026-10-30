@@ -6,7 +6,7 @@
 
 > **TEMPLATE REPOSITORY** — click **Use this template** to start. Day-to-prod path below; commercial Starter Pack deliverables in [`docs/starter-pack-deliverables.md`](docs/starter-pack-deliverables.md).
 
-Vendor-grade, secure-by-default K3s reference by **Ranas Security** ([run-as-daemon.dev](https://run-as-daemon.dev)). Bootstrap a Zero Trust cluster: no exposed ports, Cloudflare Tunnel ingress, GitOps with ArgoCD.
+Open-source secure-by-default K3s reference by **Ranas Security** ([run-as-daemon.dev](https://run-as-daemon.dev)). Bootstrap a Zero Trust cluster: no exposed ports, Cloudflare Tunnel ingress, GitOps with ArgoCD.
 
 ## Day-to-prod
 
@@ -34,7 +34,7 @@ make deploy
 
 | Tool | Role | Link |
 |------|------|------|
-| **k8s-security-gate** | CI: fail on CRITICAL/HIGH manifest findings | [repo](https://github.com/ranas-mukminov/k8s-security-gate) · copy [`examples/ci/k8s-security-gate.yml`](examples/ci/k8s-security-gate.yml) → `.github/workflows/` when you add cluster YAML |
+| **Manifest security example** | Optional Checkov-based validation, configured to fail on CRITICAL/HIGH findings | Copy [`examples/ci/k8s-security-gate.yml`](examples/ci/k8s-security-gate.yml) → `.github/workflows/` after reviewing configuration for your repository |
 | **Kube-Simple-Audit** | Runtime one-liner + Markdown report | [repo](https://github.com/ranas-mukminov/Kube-Simple-Audit) |
 
 ```bash
