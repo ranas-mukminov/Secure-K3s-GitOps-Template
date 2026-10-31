@@ -1,3 +1,21 @@
+> **Problem:** a K3s cluster that starts open — exposed ports, no GitOps discipline — is hard to close down later.
+>
+> **What this is:** a secure-by-default K3s GitOps template: Zero Trust posture, Cloudflare Tunnel ingress, ArgoCD reconciliation. Use this template to start, then review every value for your own environment before deploying.
+>
+> **Who it is for:** teams standing up a small production K3s cluster with GitOps from day one.
+>
+> **Quickstart:**
+>
+> ```bash
+> git clone https://github.com/ranas-mukminov/Secure-K3s-GitOps-Template.git
+> cd Secure-K3s-GitOps-Template
+> cp .env.example .env
+> bash bootstrap.sh
+> ```
+>
+> `bootstrap.sh` validates dependencies and reports cleanly what is missing (for example, kubectl) before any deployment step. No CI badge is shown here because this repository has no CI workflow yet.
+
+---
 # Secure-K3s-GitOps-Template
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
