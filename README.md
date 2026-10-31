@@ -55,6 +55,14 @@ The base template path does **not** require AutoHarden. For SMB / Starter nodes 
 
 Full steps: [k3s-pre-join-bootstrap.md](https://github.com/ranas-mukminov/AutoHarden-Toolkit/blob/main/docs/k3s-pre-join-bootstrap.md) · narrow SSH helper: [ssh-harden](https://github.com/ranas-mukminov/ssh-harden)
 
+## Limitations
+
+- The Terraform path targets Hetzner (with DigitalOcean mentioned in the layout) and Cloudflare Tunnel; other clouds require adapting the Terraform code.
+- Secrets are not provisioned by the template: copy `.env.example` to `.env` and fill tokens yourself (`.env` is gitignored).
+- `make deploy` applies Terraform; ArgoCD reconciles `cluster/` only after you commit and push.
+- Host hardening is optional and not part of the base template path — see "Optional: host harden before K3s join" above.
+- This template was not run end-to-end in this update (no cluster was provisioned here); the steps above are the documented path, not a verified deployment log.
+
 ## Why this exists
 
 - **Zero Trust:** no direct SSH, no public kube-api; ingress via Cloudflare Tunnel.
